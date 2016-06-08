@@ -8,7 +8,8 @@ bl_info = {
 	"description": "Load gist info and raw data.",
 	"support": "COMMUNITY",
 	"wiki_url": "",
-	"category": "Text Editor"}
+	"tracker_url": "",
+	"category": "Text"}
 
 if "bpy" in locals():
 	import imp
