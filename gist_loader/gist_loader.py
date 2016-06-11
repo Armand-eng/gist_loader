@@ -59,12 +59,16 @@ class GetGistsInfoButton(bpy.types.Operator):
         # 最初のページだけ取得し、ヘッダを調査
         params_start = {self.url_param_page: str(start_page)}
         request_start = requests.get(url, verify=False, params=params_start, proxies=proxies)
-        if not request_start:
-            bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface("Can not found User."))
-            return
-
         print("page number : {0}".format(start_page))
         self.print_limit(request_start)
+
+        if not request_start:
+            if self.reach_limit(request_start):
+                message = "Resquest limit reached. Reset : {0}"
+                bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface(message).format(self.get_reset_time(request_start)))
+            else:
+                bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface("Can not found User."))
+            return
 
         last_page = 1
         if self.key_link in request_start.headers:
@@ -79,8 +83,8 @@ class GetGistsInfoButton(bpy.types.Operator):
 
         print("last page : {0}".format(last_page))
 
-        json_start = request_start.json()
-        if not json_start:
+        gists_data_start = json.loads(request_start.text, object_pairs_hook=collections.OrderedDict)
+        if not gists_data_start:
             if start_page == 1:
                 bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface("This User has no gists."))
                 return
@@ -96,8 +100,6 @@ class GetGistsInfoButton(bpy.types.Operator):
 
         end_page = settings.end_page
 
-        gists_data_start = request_start.json()
-
         for i in range(0, len(settings.gists)):
             settings.gists.remove(0)
 
@@ -107,12 +109,19 @@ class GetGistsInfoButton(bpy.types.Operator):
         for page_num in range(start_page + 1, end_page + 1):
             params = {self.url_param_page: str(start_page)}
             request = requests.get(url, params=params, verify=False, proxies=proxies)
-
             print("page number : {0}".format(page_num))
             self.print_limit(request)
 
-            json = request.json()
-            self.add_gist(settings.gists, json)
+            if not request:
+                if self.reach_limit(request):
+                    message = "Resquest limit reached. Reset : {0}"
+                    bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface(message).format(self.get_reset_time(request)))
+                else:
+                    bpy.ops.error.gist_loader('INVOKE_DEFAULT', message=pgettext_iface("Can not found Page."))
+                return
+
+            gist_data = json.loads(request.text, object_pairs_hook=collections.OrderedDict)
+            self.add_gist(settings.gists, gist_data)
 
     def get_proxies(self, context, settings):
         proxies = {}
@@ -128,14 +137,19 @@ class GetGistsInfoButton(bpy.types.Operator):
     def print_limit(self, request):
         limit = request.headers[self.key_header_limit]
         remaining = request.headers[self.key_header_remaining]
-        reset = request.headers[self.key_header_reset]
 
         print(self.key_header_limit + " : " + limit)
         print(self.key_header_remaining + " : " + remaining)
+        print(self.key_header_reset + " : " + self.get_reset_time(request))
 
+    def reach_limit(self, request):
+        remaining = request.headers[self.key_header_remaining]
+        return True if int(remaining) == 0 else False
+
+    def get_reset_time(self, request):
+        reset = request.headers[self.key_header_reset]
         time_raw = time.localtime(int(reset))
-        time_str = time.strftime("%Y/%m/%d %H:%M:%S", time_raw)
-        print(self.key_header_reset + " : " + time_str)
+        return time.strftime("%H:%M:%S", time_raw)
 
     def add_gist(self, gists, gists_data):
         for i, gist_data in enumerate(gists_data):
@@ -166,6 +180,7 @@ class LoadGistsTextButton(bpy.types.Operator):
             bpy.ops.error.gist_loader('INVOKE_DEFAULT',message=pgettext_iface("No items selected."))
             return
 
+        open_text = None
         for gist in selected_gists:
             file_name = gist.file_name
             raw_url = gist.raw_url
@@ -176,6 +191,11 @@ class LoadGistsTextButton(bpy.types.Operator):
             text = request.text
             new_text = bpy.data.texts.new(file_name)
             new_text.write(text)
+            if not open_text:
+                open_text = new_text
+
+        text = bpy.data.texts["sample.py"]
+        bpy.context.space_data.text = open_text
 
 class GistInfo(bpy.types.PropertyGroup):
     toggle_load_file = BoolProperty(default=False)

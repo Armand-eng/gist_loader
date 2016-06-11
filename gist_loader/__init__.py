@@ -71,6 +71,8 @@ translations = {
         ("*", "This User has no gists."): "指定したユーザーにはGistが存在しません。",
         ("*", "The last page of this user is {0}."): "指定したユーザーの最終ページは{0}です。",
         ("*", "No items selected."): "アイテムが選択されていません。",
+        ("*", "Resquest limit reached. Reset : {0}"): "接続回数の上限に達しました。リセット時間 : {0}",
+        ("*", "Can not found Page."): "ページが見つかりません。",
     }
 }
 
