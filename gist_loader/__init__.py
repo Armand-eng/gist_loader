@@ -73,6 +73,7 @@ translations = {
         ("*", "No items selected."): "アイテムが選択されていません。",
         ("*", "Resquest limit reached. Reset : {0}"): "接続回数の上限に達しました。リセット時間 : {0}",
         ("*", "Can not found Page."): "ページが見つかりません。",
+        ("*", "Max number of pages"): "最大ページ数",
     }
 }
 
