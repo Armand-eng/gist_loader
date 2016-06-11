@@ -10,4 +10,4 @@ You use AT YOUR OWN RISK.
 このソフトを利用することによって生じた損害等について、作者は
 責任を負わないものとします。各自の責任においてご利用下さい。
 
-ユーザーガイド : [wiki](https://github.com/TakosukeGH/gist_loder/wiki)
+ユーザーガイド : [wiki](https://github.com/TakosukeGH/gist_loder/wiki/ユーザーガイド)
