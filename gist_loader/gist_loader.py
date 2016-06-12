@@ -194,7 +194,6 @@ class LoadGistsTextButton(bpy.types.Operator):
             if not open_text:
                 open_text = new_text
 
-        text = bpy.data.texts["sample.py"]
         bpy.context.space_data.text = open_text
 
 class GistInfo(bpy.types.PropertyGroup):
